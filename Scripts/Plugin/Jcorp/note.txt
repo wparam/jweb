@@ -1,0 +1,2 @@
+﻿Jcorp是一个js用来实时切图的工具 , 官网地址:
+http://deepliquid.com/content/Jcrop_Download.html
