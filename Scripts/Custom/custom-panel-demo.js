@@ -4,17 +4,17 @@
 _JsL.WorkExp.Model = _JsL.EditPanel.Model.extend({
     defaults: _.extend({
         m_rid: 0,
-        m_starty: 0,
-        m_startm: 0,
-        m_endy: 0,
-        m_endm: 0,
+        m_starty: '',
+        m_startm: '',
+        m_endy: _JsL.Util.getCurrentYear,
+        m_endm: _JsL.Util.getCurrentMonth,
         m_company: '',
         m_industry: '',
         m_title: '',
         m_salary: '',
         m_leftreason: '',
-        m_isred: '',
-        isEdit: false
+        m_description : '',
+        m_isred: "N"
     }, _JsL.EditPanel.Model.prototype.defaults),
     initialize: function () {
         _JsL.EditPanel.Model.prototype.initialize.call(this);
@@ -32,6 +32,7 @@ _JsL.WorkExp.Model = _JsL.EditPanel.Model.extend({
             m_title: this.get("m_title"),
             m_salary: this.get("m_salary"),
             m_leftreason: this.get("m_leftreason"),
+            m_description: this.get("m_description"),
             m_isred: this.get("m_isred")
         });
     }
@@ -59,7 +60,7 @@ _JsL.WorkExp.View = _JsL.EditPanel.View.extend({
                         '<th>公司：</th>',
                         '<td>', this.model.get("m_company"), '</td>',
                         '<th width="90">行业：</th>',
-                        '<td width="320">', this.model.get("m_industry"), '</td>',
+                        '<td width="320">',_JsL.Util.getTextInColByKey( _JsL.WorkExp.View.Industry,this.model.get("m_industry")), '</td>',
                         '<td>',
                             '<a href="javascript:;" class="panel-delete"><img src="/Content/images/btn_delete.gif" width="60" height="20" /></a>',
                         '</td>',
@@ -73,14 +74,17 @@ _JsL.WorkExp.View = _JsL.EditPanel.View.extend({
                     '</tr>',
                     '<tr>',
                         '<th>离职原因：</th>',
-                        '<td>', this.model.get("m_leftreason"), '</td>',
-                        '<th>&nbsp;</th>',
+                        '<td colspan="3">', this.model.get("m_leftreason"), '</td>',
                         '<td>&nbsp;</td>',
+                    '</tr>',
+                    '<tr>',
+                        '<th>工作内容：</th>',
+                        '<td colspan="3">', this.model.get("m_description"), '</td>',
                         '<td>&nbsp;</td>',
                     '</tr>',
                     '<tr>',
                         '<th>是否红星：</th>',
-                        '<td>', this.model.get("m_isred"), '</td>',
+                        '<td>', (this.model.get("m_isred") == "Y" ? "是" : "否"), '</td>',
                         '<th>&nbsp;</th>',
                         '<td>&nbsp;</td>',
                         '<td>&nbsp;</td>',
@@ -94,20 +98,20 @@ _JsL.WorkExp.View = _JsL.EditPanel.View.extend({
                     '<tr>',
                         '<th width="90"><span class="font_red">*</span>时间：</th>',
                         '<td colspan="3">',
-                            '<select name="m_starty" class="widthS" id="select">',
-                                '<option selected="selected" value="0">--年--</option>', this.getYear(),
+                            '<select name="m_starty" class="widthS required" id="select" required>',
+                                '<option selected="selected" value="">--年--</option>', this.getYear(),
                             '</select> ',
-                            '<select name="m_startm" class="widthS" id="select2">',
-                                '<option selected="selected" value="0">--月--</option><option value="1">1</option><option value="2">2</option>',
+                            '<select name="m_startm" class="widthS required" id="select2" required>',
+                                '<option selected="selected" value="">--月--</option><option value="1">1</option><option value="2">2</option>',
                                 '<option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>',
                                 '<option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>',
                                 '<option value="11">11</option><option value="12">12</option>',
                             '</select> 到 ',
                             '<select name="m_endy" class="widthS" id="select3">',
-                                '<option selected="selected" value="0">--年--</option>', this.getYear(),
+                                '<option selected="selected" value="', _JsL.Util.getCurrentYear, '">--年--</option>', this.getYear(),
                             '</select> ',
                             '<select name="m_endm" class="widthS" id="select4">',
-                                '<option selected="selected" value="0">--月--</option><option value="1">1</option><option value="2">2</option>',
+                                '<option selected="selected" value="', _JsL.Util.getCurrentMonth, '">--月--</option><option value="1">1</option><option value="2">2</option>',
                                 '<option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>',
                                 '<option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>',
                                 '<option value="11">11</option><option value="12">12</option>',
@@ -117,25 +121,21 @@ _JsL.WorkExp.View = _JsL.EditPanel.View.extend({
                     '</tr>',
                     '<tr>',
                         '<th><span class="font_red">*</span>公司：</th>',
-                        '<td width="330"><input name="m_company" type="text" class="widthL" id="textfield" /></td>',
+                        '<td width="330"><input name="m_company" type="text" class="widthL required" id="textfield" required/></td>',
                         '<th width="90"><span class="font_red">*</span>行业：</th>',
                         '<td>',
-                            '<select name="select4" class="widthM" id="select6">',
-                                '<option value="0">--请选择--</option>',
-                                '<option value="1">--制造业--</option>',
-                                '<option value="2">--服务业--</option>',
-                                '<option value="3">--家居--</option>',
-                                '<option value="4">--服装--</option>',
-                                '<option value="5">--计算机--</option>',
+                            '<select name="m_industry" class="widthM required" id="select6" required>',
+                                '<option value="">--请选择--</option>',
+                                this.getSelectTemplate(_JsL.WorkExp.View.Industry),
                             '</select>',
                         '</td>',
                         '<td>&nbsp;</td>',
                     '</tr>',
                     '<tr>',
                         '<th><span class="font_red">*</span>职位：</th>',
-                        '<td><input name="m_title" type="text" class="widthL" id="textfield2" /></td>',
+                        '<td><input name="m_title" type="text" class="widthL required" id="textfield2" required/></td>',
                         '<th>薪资：</th>',
-                        '<td><input name="m_salary" type="text" class="widthL" id="textfield3" />元</td>',
+                        '<td><input name="m_salary" type="text" class="widthL Double-Check" id="textfield3" />元</td>',
                         '<td>&nbsp;</td>',
                     '</tr>',
                     '<tr>',
@@ -146,9 +146,16 @@ _JsL.WorkExp.View = _JsL.EditPanel.View.extend({
                         '<td>&nbsp;</td>',
                     '</tr>',
                     '<tr>',
+                        '<th>工作内容：</th>',
+                        '<td colspan="3"><label for="fileField"></label><label for="textarea"></label>',
+                            '<textarea name="m_description" cols="45" rows="5" class="widthXXL" id="textarea"></textarea>',
+                        '</td>',
+                        '<td>&nbsp;</td>',
+                    '</tr>',
+                    '<tr>',
                         '<th><span class="font_red">*</span>是否红星：</th>',
-                        '<td><input type="radio" name="m_isred" id="radio" value="1" checked="checked" />是',
-                            '<input type="radio" name="m_isred" id="radio2" value="2" />否',
+                        '<td><input type="radio" class="m_isred" name="m_isred', this.model.cid, '" id="m_isred" value="Y" ></input>是',
+                            '<input type="radio" class="m_isred" name="m_isred', this.model.cid, '" id="m_isred" value="N" ></input>否',
                         '</td>',
                         '<th>&nbsp;</th>',
                         '<td>&nbsp;</td>',
@@ -159,15 +166,41 @@ _JsL.WorkExp.View = _JsL.EditPanel.View.extend({
                     '<input type="button" class="save panel-save" style="cursor:pointer" value="保存" />',
                     '<a href="javascript:;" class="cancel panel-cancel">取消</a>',
                 '</div>'
-        ].join('');
+            ].join('');
+    },
+    getBinds: function () {
+        return {
+            m_starty: '[name=m_starty]',
+            m_startm: '[name=m_startm]',
+            m_endy: '[name=m_endy]',
+            m_endm: '[name=m_endm]',
+            m_company: '[name=m_company]',
+            m_industry: '[name=m_industry]',
+            m_title: '[name=m_title]',
+            m_salary: '[name=m_salary]',
+            m_leftreason: '[name=m_leftreason]',
+            m_description: '[name=m_description]',
+            m_isred: '.m_isred' //用id或者name都不行
+        };
     },
     restoreModel: function () {
         var src = this.cache.src_model;
         this.model.set({
             m_starty: src.get("m_starty"), m_startm: src.get("m_startm"), m_endy: src.get("m_endy"), m_endm: src.get("m_endm"),
             m_company: src.get("m_company"), m_industry: src.get("m_industry"), m_title: src.get("m_title"),
-            m_salary: src.get("m_salary"), m_leftreason: src.get("m_leftreason"), m_isred: src.get("m_isred")
+            m_salary: src.get("m_salary"), m_leftreason: src.get("m_leftreason"), m_description: src.get("m_description"), m_isred: src.get("m_isred")
         });
+    },
+    getSelectTemplate: function (collection) {
+        var selectTemp =
+                ['{#foreach $T as row}',
+                    '<option value="{$T.row.ValueField}">{$T.row.TextField}</option>',
+                 '{#/for}',
+                ].join('');
+        var tgt = $('<div></div>');
+        tgt.setTemplate(selectTemp);
+        tgt.processTemplate(collection);
+        return tgt.html();
     }
 })
 
@@ -178,33 +211,56 @@ _JsL.WorkExp.Col.View = _JsL.Panel.Col.View.extend({
     model: _JsL.Panel.Col.Model,
     initialize: function () {
         _JsL.Panel.Col.View.prototype.initialize.call(this);
+        _.bindAll(this, 'addPanel');
+    },
+    addPanel: function () {
+        this.collection.push(new _JsL.WorkExp.Model({
+            save_url: this.model.get("save_url"),
+            m_rid: this.model.get("p_id"),
+            del_url: this.model.get("del_url"),
+            isEdit: true,
+            readonly: this.model.get("readonly")
+        }));
     },
     afterRender: function (d) {//依次从col里面取得model, 实例化成view
-        if (!d || d.length == 0)
-            return;
         var context = this,
             arr = [];
-        this.model.set("m_id", d[0].ResumeId);
-        $.each(d, function (i, n) {
-            var m = new _JsL.WorkExp.Model({
-                m_id: n.Id,
-                m_rid: n.ResumeId,
-                m_starty: 2004, //todo 没有开始年月
-                m_startm: 5,
-                m_endy: 2006,
-                m_endm: 6,
-                m_company: n.Employer,
-                m_industry: n.Industry,
-                m_title: n.Position,
-                m_salary: n.Pay,
-                m_leftreason: n.Reason,
-                m_isred: n.IsRedStar,
-                isEdit: false,
-                save_url: context.model.get("save_url"),
-                del_url: context.model.get("del_url")
+        if (!d || d.length == 0) {
+            if (!this.model.get("readonly")) {
+                arr.push(new _JsL.WorkExp.Model({
+                    save_url: this.model.get("save_url"),
+                    m_rid: this.model.get("p_id"),
+                    del_url: this.model.get("del_url"),
+                    isEdit: true,
+                    readonly: this.model.get("readonly")
+                }));
+            }
+        }
+        else {
+            this.model.set("p_id", d[0].ResumeId);
+            $.each(d, function (i, n) {
+                var m = new _JsL.WorkExp.Model({
+                    m_id: n.Id,
+                    m_rid: n.ResumeId,
+                    m_starty: n.BeginYear, //todo 没有开始年月
+                    m_startm: n.BeginMonth,
+                    m_endy: n.EndYear,
+                    m_endm: n.EndMonth,
+                    m_company: n.Employer,
+                    m_industry: n.Industry,
+                    m_title: n.Position,
+                    m_salary: n.Pay,
+                    m_leftreason: n.Reason,
+                    m_description: n.Description,
+                    m_isred: n.IsRedStar,
+                    isEdit: false,
+                    save_url: context.model.get("save_url"),
+                    del_url: context.model.get("del_url"),
+                    readonly: context.model.get("readonly")
+                });
+                arr.push(m);
             });
-            arr.push(m);
-        });
+        }
         this.collection.add(arr);
     }
 

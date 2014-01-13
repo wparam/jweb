@@ -56,7 +56,7 @@ _JsL.Util = {
                     return (b[key] > a[key]);
             });
         }
-        return d;
+        return d;  
     },
     formateString: function (s) {
         if (s.length == 0 || s == 'null')
