@@ -1,4 +1,4 @@
-$.ns('_JsL', '_JsL.Component', '_JsL.PopWindow', '_JsL.List', '_JsL.Pagination', '_JsL.Tree', '_JsL.Panel', '_JsL.EditPanel',
+$.ns('_JsL', '_JsL.Component', '_JsL.PopWindow', '_JsL.List','_JsL.Grid', '_JsL.Pagination', '_JsL.Tree', '_JsL.Panel', '_JsL.EditPanel',
     '_JsL.Panel.Col');
 //#region Uti
 _JsL.Util = {
@@ -27,7 +27,11 @@ _JsL.Util = {
             },
             error: function () {
                 if (typeof error === 'function') {
-                    error('Ajax call error');
+                    for (var i in e)
+                    {
+                        console.log(i + "|" + e[i]);
+                    }
+                    error('Ajax call error : ' + e.responseText);
                 }
             }
         });
@@ -114,7 +118,8 @@ _JsL.Util = {
             return s.replace(/\n/g, '<br/>');
     },
     printMsg: function (msg) {
-        alert(msg);
+        if (console !== 'undefined')
+            console.log(msg);
     },
     getRelativePos: function (src, objX, objY) {
         var srcposition = function (el) {
@@ -304,8 +309,8 @@ _JsL.Pagination.Model = _JsL.List.Model.extend({
         current_page: 0,
         num_edge_entries: 2,
         link_to: "###",
-        prev_text: "前页",
-        next_text: "后页",
+        prev_text: "脟掳脪鲁",
+        next_text: "潞贸脪鲁",
         ellipse_text: "...",
         prev_show_always: true,
         next_show_always: true,
@@ -364,6 +369,55 @@ _JsL.Pagination.View = _JsL.List.View.extend({
             j++;
         }
         this.visualize(newarr);
+    }
+});
+//#endregion
+
+//#region _JsL.Grid
+_JsL.Grid.Model = _JsL.Component.Model.extend({
+    defaults: _.extend({
+        paging: false,
+        sort: false
+    }, _JsL.Component.Model.prototype.defaults),
+    initialize: function () {
+        _JsL.Component.Model.prototype.initialize.call(this);
+    }
+});
+
+_JsL.Grid.View = _JsL.Component.View.extend({
+    model: _JsL.Grid.Model,
+    events: _.extend({
+        'click .sort .up': 'ascend',   //todo,sort css
+        'click .sort .down': 'descend',
+        'click tbody tr': 'onRowClick',
+        'mouseenter tbody tr': 'onMouseEnter',
+        'mouseleave tbody tr':'onMouseLeave'
+    }, _JsL.Component.View.prototype.events),
+    initialize: function () {
+        _JsL.Component.View.prototype.initialize.call(this);
+    },
+    ascend: function () {
+
+    },
+    descend: function () {
+
+    },
+    onRowClick: function (e) {
+        $.each(this.$el.find('tbody tr'), function (i, n) {
+            if (n != e.currentTarget && $(n).hasClass('select')) {
+                $(n).removeClass('select');
+            }
+        });
+        $(e.currentTarget).addClass('select');
+    },
+    onMouseEnter: function (e) {
+        $(e.currentTarget).addClass('active');
+    },
+    onMouseLeave: function (e) {
+        $(e.currentTarget).removeClass('active');
+    },
+    onSelect: function () {
+
     }
 });
 //#endregion
@@ -433,8 +487,6 @@ _JsL.Tree.View = _JsL.Component.View.extend({
         });
     }
 });
-
-
 //#endregion
 
 //#region _JsL.Panel
@@ -514,11 +566,11 @@ _JsL.EditPanel.View = _JsL.Panel.View.extend({
         return this.cache.year;
     },
     editPanel: function () {
-        this.reBindCache(); //修改前先记录当前数据
+        this.reBindCache(); 
         this.model.set({ "isEdit": true });
     },
     deletePanel: function () {
-        if (confirm('确认删除此记录么?')) {
+        if (confirm('Are you sure to delete')) {
             this.delData();
         }
     },
@@ -527,11 +579,11 @@ _JsL.EditPanel.View = _JsL.Panel.View.extend({
         _JsL.Util.ajaxCall({
             url: context.model.get("del_url"), method: 'POST', parms: $.param({ id: context.model.get("m_id") })
         }, function (d) {
-            if (d.d > 0) {//成功
+            if (d.d > 0) {//鲁脡鹿娄
                 context.remove();
             }
         }, function (e) {
-            _JsL.Util.printMsg('删除数据出错' + e);
+            _JsL.Util.printMsg('Error on Delete Date : message is ' + e);
         });
     },
     savePanel: function (async) {
@@ -567,15 +619,15 @@ _JsL.EditPanel.View = _JsL.Panel.View.extend({
         _JsL.Util.ajaxCall({
             url: context.model.get("save_url"), method: 'POST', async: async || true, parms: context.model.getParams()
         }, function (d) {
-            if (d.d > 0) {//成功
+            if (d.d > 0) {
                 context.model.set({ "isEdit": false, m_id: d.d });
             }
         }, function (e) {
-            //_JsL.Util.printMsg('保存数据出错' + e);
+            
         });
     },
-    cancelPanel: function () { //取消操作, 还原最原始的数据
-        if (this.model.get("m_id") == 0) {//初次创建后取消
+    cancelPanel: function () { 
+        if (this.model.get("m_id") == 0) {
             this.remove();
             return;
         }
@@ -590,7 +642,7 @@ _JsL.EditPanel.View = _JsL.Panel.View.extend({
     afterRender: function (d) {
         if (this.model.get("isEdit")) {
             if (this.getBinds && typeof this.getBinds === 'function') {
-                var bindings = this.getBinds(); //可以不用bindings, 但是因为有radio控件, name和他的组重复
+                var bindings = this.getBinds(); 
                 this._modelBinder.bind(this.model, this.el, bindings);
             }
             else {
@@ -610,7 +662,7 @@ _JsL.Panel.Col.Model = _JsL.Panel.Model.extend({
     defaults: _.extend({
         v_collections: [],
         v_class: _JsL.EditPanel.View,
-        p_id: 0 //集合id
+        p_id: 0 //录炉潞脧id
     }, _JsL.Panel.Model.prototype.defaults),
     initialize: function () {
         _JsL.Panel.Model.prototype.initialize.call(this);
@@ -618,8 +670,7 @@ _JsL.Panel.Col.Model = _JsL.Panel.Model.extend({
 });
 
 _JsL.Panel.Collection = Backbone.Collection.extend({
-    model: _JsL.Panel.Col.Model,
-
+    model: _JsL.Panel.Col.Model
 });
 
 _JsL.Panel.Col.View = _JsL.Component.View.extend({
@@ -639,7 +690,7 @@ _JsL.Panel.Col.View = _JsL.Component.View.extend({
         return [
              '<table width="100%" border="0" cellspacing="0" cellpadding="0" class="layout">',
                 '<tr class="panel-footer" ', (this.model.get("readonly") ? ' style="display:none"' : ''), '>',
-                    '<td><a href="javascript:;" class="addmore panel-add">继续添加</a></td>',
+                    '<td><a href="javascript:;" class="addmore panel-add">Add</a></td>',
                 '</tr>',
              '</table>'
         ].join('');
@@ -647,7 +698,7 @@ _JsL.Panel.Col.View = _JsL.Component.View.extend({
     onAddPanel: function (m) {
         var tel = $('<tr class="panel-dynamic"><td style="padding-top: 0;" class="panel-container"></td></tr>');
         this.$el.find('table tr.panel-footer').before(tel);
-        var v = new (this.model.get("v_class"))({ //生成view
+        var v = new (this.model.get("v_class"))({
             el: tel.find('td.panel-container'),
             model: m
         });
