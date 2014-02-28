@@ -97,7 +97,22 @@ _JsL.Util = {
 
         if (dt && dt.getFullYear() <= 1980)
             return '';
-        return dt.toString(f);
+
+        var o = {
+            "M+": dt.getMonth() + 1, //month
+            "d+": dt.getDate(),    //day
+            "h+": dt.getHours(),   //hour
+            "m+": dt.getMinutes(), //minute
+            "s+": dt.getSeconds(), //second
+            "q+": Math.floor((dt.getMonth() + 3) / 3),  //quarter
+            "S": dt.getMilliseconds() //millisecond
+        }
+        if (/(y+)/.test(f))
+            f = f.replace(RegExp.$1, (dt.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o) if (new RegExp("(" + k + ")").test(f))
+            f = f.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
+        return f;
+        //return dt.toString(f);
     },
     getCurrentYear: new Date().getFullYear(),
     getCurrentMonth: new Date().getMonth() + 1,
@@ -146,8 +161,16 @@ _JsL.Util = {
         var x = Math.max(0, (($(windw).width() - $(obj).outerWidth()) / 2) + $(windw).scrollLeft()) + "px";
         var y = Math.max(0, (($(windw).height() - $(obj).outerHeight()) / 2) + $(windw).scrollTop()) + "px";
         return { x: x, y: y }
+    },
+    getGuid:function(){
+        var S4 = function () {
+           return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+        }
+        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+        
     }
 }
+$U = Pms.Util;
 //#endregion
 
 //#region _JsL.Component
@@ -640,19 +663,14 @@ _JsL.EditPanel.View = _JsL.Panel.View.extend({
         this.visualize();
     },
     afterRender: function (d) {
-        if (this.model.get("isEdit")) {
-            if (this.getBinds && typeof this.getBinds === 'function') {
-                var bindings = this.getBinds(); 
-                this._modelBinder.bind(this.model, this.el, bindings);
-            }
-            else {
-                this._modelBinder.bind(this.model, this.el);
-            }
+        if (this.getBinds && typeof this.getBinds === 'function') {
+            var bindings = this.getBinds(); 
+            this._modelBinder.bind(this.model, this.el, bindings);
         }
-        if (this.model.get("readonly")) {
-            this.$el.find('.panel-edit').hide();
-            this.$el.find('.panel-delete').hide();
+        else {
+            this._modelBinder.bind(this.model, this.el);
         }
+      
     }
 })
 //#endregion
