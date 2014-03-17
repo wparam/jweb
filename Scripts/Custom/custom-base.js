@@ -114,6 +114,30 @@ _JsL.Util = {
         return f;
         //return dt.toString(f);
     },
+    convertDate:function(stringdate){ //convert 2000-1-1 format date to date obj
+        // Internet Explorer does not like dashes in dates when converting, 
+        // so lets use a regular expression to get the year, month, and day 
+            var DateRegex = /([^-]*)-([^-]*)-([^-]*)/;
+        var DateRegexResult = stringdate.match(DateRegex);
+        var DateResult;
+        var StringDateResult = "";
+
+        // try creating a new date in a format that both Firefox and Internet Explorer understand
+        try
+        {
+            DateResult = new Date(DateRegexResult[2]+"/"+DateRegexResult[3]+"/"+DateRegexResult[1]);
+        } 
+        // if there is an error, catch it and try to set the date result using a simple conversion
+        catch(err) 
+        { 
+            DateResult = new Date(stringdate); 
+        }
+
+        // format the date properly for viewing
+        StringDateResult = (DateResult.getMonth()+1)+"/"+(DateResult.getDate()+1)+"/"+(DateResult.getFullYear());
+
+        return StringDateResult;
+    },
     getCurrentYear: new Date().getFullYear(),
     getCurrentMonth: new Date().getMonth() + 1,
     getTextInColByKey: function (col, key) {
