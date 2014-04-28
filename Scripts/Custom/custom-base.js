@@ -15,7 +15,7 @@ _JsL.Util = {
         $.ajax({
             type: o.method,
             url: o.url,
-            data: o.method == 'GET' ? { parms: o.parms } : JSON.stringify({ parms: o.parms }), //todo, get ,post need different format
+            data: o.method == 'GET' ? o.parms : JSON.stringify(o.parms), //todo, get ,post need different format
             async: o.async,
             cache: false,
             contentType: "application/json; charset=utf-8",
@@ -61,6 +61,15 @@ _JsL.Util = {
             });
         }
         return d;  
+    },
+    arrayIndexOf: function (arr, s) {
+        var result = false;
+        $.each(arr, function (n, i) {
+            if ($.trim(this) == $.trim(s)) {
+                result = true;
+            }
+        });
+        return result;
     },
     formateString: function (s) {
         if (s.length == 0 || s == 'null')
@@ -245,23 +254,37 @@ _JsL.Component.View = Backbone.View.extend({
     },
     beforeRender: function () {
         var context = this;
-        if (!this.model.get("config").url && !$.isEmptyObject(this.model.get("data"))) {
-            this.visualize(this.model.get("data"));
+        if (!this.model.get("config").url) {
+            this.visualize(!$.isEmptyObject(this.model.get("data")) ? this.model.get("data") : null);
         }
         else {
-            _JsL.Util.ajaxCall(this.model.getConfig(), function (d) {
+            Pms.Util.ajaxCall(this.model.getConfig(), function (d) {
+                var fd = context.formatData(d);
+                context.visualize(fd);
+            }, function (e) {
+                Pms.Util.printMsg('Error on BeforeRender:' + e);
+                throw e;
+            });
+        }
+    },
+    formatData: function (d) {
+        var returndata = d;
+        switch ($U.platformMode) {
+            case 'WebForm':
                 if (d.d && typeof d.d === 'string') {
                     d = $.parseJSON(d.d);
                 }
                 else {
                     d = $.parseJSON(d);
                 }
-                context.visualize(d);
-            }, function (e) {
-                _JsL.Util.printMsg('Error on BeforeRender:' + e);
-                throw err;
-            });
+                break;
+            case 'MVC':
+                break;
+            default:
+                break;
         }
+        
+        return returndata;
     },
     visualize: function (d) {
         try {
@@ -271,7 +294,7 @@ _JsL.Component.View = Backbone.View.extend({
             }
         }
         catch (err) {
-            _JsL.Util.printMsg('Error on visualize : ' + err);
+            Pms.Util.printMsg('Error on visualize : ' + err);
             throw err;
         }
     },
