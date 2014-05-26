@@ -9,4 +9,4 @@ This is a javascript library based on Jquery and Backbone, to build a light weig
 
 License
 
-MIT for this.
+MIT for this(Except files in Funcs directory)
